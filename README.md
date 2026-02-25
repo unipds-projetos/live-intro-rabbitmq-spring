@@ -155,7 +155,7 @@ Estas mudanças permitem demonstrar os conceitos da live: exchanges, routing key
 
 ## Desafios
 
-### 🥈 Protegendo as Notas Fiscais
+### 🥉 Protegendo as Notas Fiscais
 Durante a live, a infraestrutura de Dead Letter Exchange (DLX) e Dead Letter Queue (DLQ) foi configurada apenas no microserviço de Pedidos.
 
 Vá além e treine com os desafios a seguir. Mande uma PR e uma mensagem no Discord para que seu código seja revisado pelos nossos instrutores.
@@ -166,7 +166,7 @@ Você deve replicar essa mesma infra de Dead Letters no microserviço de Notas F
 
 Simule uma exceção no PagamentoConfirmadoListener de Notas Fiscais (por exemplo, lançar um erro se o valor do pagamento for superior a R$ 100,00) e garantir que a mensagem rejeitada vá parar em uma nova fila chamada `notas-fiscais.pagamento-confirmado.dlq`
 
-### 🥇 Implementando um retry
+### 🥈 Implementando um retry
 
 Durante a live, foi comentado conceitualmente que falhas intermitentes (como uma queda rápida de rede) podem ser tratadas com retentativas (retry), inclusive usando _Exponential Backoff_ para não sobrecarregar o servidor.
 
@@ -175,6 +175,16 @@ Durante a live, foi comentado conceitualmente que falhas intermitentes (como uma
 Implementar esse mecanismo no Spring Boot sem escrever novos blocos try/catch. Você deve pesquisar como configurar o Retry do Spring AMQP diretamente no `application.properties` do consumidor.
 
 Configurar para que o Spring tente reprocessar a mensagem até 3 vezes, com um intervalo inicial de 2 segundos que vai dobrando a cada falha (2s, 4s, 8s). Somente após esgotar essas 3 tentativas a mensagem deve ser finalmente enviada para a DLX.
+
+### 🥇 Migrando para Spring Cloud Stream
+
+Durante a live, foi mencionado que ferramentas como o Spring Integration e o Spring Cloud Stream abstraem ainda mais o uso da mensageria, sendo o Spring AMQP a melhor escolha inicial para focar e fixar os conceitos do RabbitMQ. No entanto, o Spring Cloud Stream é amplamente adotado no mercado por oferecer um modelo de programação funcional, onde você se preocupa apenas com a regra de negócio e deixa a criação e o roteamento das *Exchanges* e *Queues* a cargo da configuração do *binder*.
+
+**A Tarefa**
+
+Refatorar o projeto para utilizar o Spring Cloud Stream na comunicação entre os microsserviços. 
+
+Você deverá adicionar a dependência do `spring-cloud-stream-binder-rabbit`, remover o uso direto do `AmqpTemplate` no produtor (Pagamentos) e substituir as anotações `@RabbitListener` nos consumidores (Pedidos e Notas Fiscais). Em seu lugar, implemente a emissão e o consumo de mensagens utilizando as interfaces funcionais do Java (`Supplier` e `Consumer`). Toda a configuração de infraestrutura — como definições de destinos, grupos de consumidores (que representam as filas) e até as regras de DLQ e Retry — deverá ser migrada e configurada exclusivamente via `application.properties`.
 
 ---
 Projeto destinado a fins educacionais para a live sobre integração assíncrona com mensageria.
