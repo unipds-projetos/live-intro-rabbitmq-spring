@@ -1,9 +1,11 @@
 package mx.florinda.eats.pagamentos.controller;
 
 import jakarta.transaction.Transactional;
+import mx.florinda.eats.pagamentos.config.AmqpConfig;
 import mx.florinda.eats.pagamentos.dto.PagamentoDTO;
 import mx.florinda.eats.pagamentos.model.Pagamento;
 import mx.florinda.eats.pagamentos.repository.PagamentoRepository;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,9 +16,11 @@ import java.util.List;
 public class PagamentoController {
 
   private final PagamentoRepository pagamentoRepository;
+  private final AmqpTemplate amqpTemplate;
 
-  public PagamentoController(PagamentoRepository pagamentoRepository) {
+  public PagamentoController(PagamentoRepository pagamentoRepository, AmqpTemplate amqpTemplate) {
     this.pagamentoRepository = pagamentoRepository;
+    this.amqpTemplate = amqpTemplate;
   }
 
   @GetMapping
@@ -38,7 +42,9 @@ public class PagamentoController {
     return pagamentoRepository.findById(id)
         .map(pagamento -> {
           pagamento.confirma();
-          return ResponseEntity.ok(new PagamentoDTO(pagamento));
+          PagamentoDTO pagamentoDTO = new PagamentoDTO(pagamento);
+          amqpTemplate.convertAndSend(AmqpConfig.EXCHANGE_NAME, "pagamentos.pagamento.confirmado", pagamentoDTO);
+          return ResponseEntity.ok(pagamentoDTO);
         })
         .orElse(ResponseEntity.notFound().build());
   }
