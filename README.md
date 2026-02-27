@@ -153,6 +153,10 @@ Principais pontos implementados:
 
 Estas mudanças permitem demonstrar os conceitos da live: exchanges, routing keys, bindings, consumer groups, fair dispatch e DLX/DLQ.
 
+## Diagrama da Live
+
+![](diagrama-live.png)
+
 ## Desafios
 
 ### 🥉 Protegendo as Notas Fiscais
