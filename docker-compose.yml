@@ -8,5 +8,14 @@ services:
       - '3306:3306'
     volumes:
       - mysql.florinda:/var/lib/mysql
+  rabbit:
+    image: rabbitmq:4.2-management
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: senha123
+    ports:
+      - '5672:5672'
+      - '15672:15672'
 volumes:
   mysql.florinda:
